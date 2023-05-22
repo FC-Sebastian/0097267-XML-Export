@@ -1,7 +1,7 @@
 <?php
 include __DIR__."/autoloader.php";
 
-$controller = "Edit";
+$controller = "XmlExport";
 if (isset($_REQUEST['controller'])) {
     $controller = $_REQUEST['controller'];
 }
