@@ -2,9 +2,9 @@
 
 function autoload($class) {
     $folders = [
-        'Classes',
-        'Controllers',
-        'Models',
+        'Application/Classes',
+        'Application/Controllers',
+        'Application/Models',
     ];
     foreach ($folders as $folder) {
         $path = __DIR__."/".$folder."/".$class.".php";

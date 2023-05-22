@@ -1,6 +1,10 @@
 <?php
 
 
+namespace Controllers;
+
+use Classes\Conf;
+
 class BaseController
 {
     protected $startsSession = false;
@@ -8,7 +12,8 @@ class BaseController
     protected $error = false;
     protected $onloadFuntction = "";
 
-    public function getOnload() {
+    public function getOnload()
+    {
         return $this->onloadFuntction;
     }
 

@@ -1,6 +1,10 @@
 <?php
 
 
+namespace Models;
+
+use Classes\DbConnection;
+
 class BaseModel
 {
     protected $tablename = false;
@@ -25,23 +29,23 @@ class BaseModel
 
     public function getTableName()
     {
-        if ($this->tablename !== false){
+        if ($this->tablename !== false) {
             return $this->tablename;
         }
     }
 
     public function getColumnNameArray()
     {
-        $query = "SHOW COLUMNS FROM ". $this->getTableName();
+        $query = "SHOW COLUMNS FROM " . $this->getTableName();
         $result = DbConnection::executeMySQLQuery($query);
         if (mysqli_num_rows($result) == 0) {
             return;
         }
-        $dataArray = mysqli_fetch_all($result,MYSQLI_ASSOC);
+        $dataArray = mysqli_fetch_all($result, MYSQLI_ASSOC);
         $returnarray = [];
-        foreach ($dataArray as $data){
+        foreach ($dataArray as $data) {
             $returnarray[] = $data["Field"];
-            }
+        }
         return $returnarray;
     }
 
@@ -62,7 +66,7 @@ class BaseModel
     public function save()
     {
         if (isset($this->data["id"])) {
-            $query = "SELECT id FROM ".$this->getTableName()." WHERE id=".$this->getId();
+            $query = "SELECT id FROM " . $this->getTableName() . " WHERE id=" . $this->getId();
             $result = DbConnection::executeMySQLQuery($query);
             $result = mysqli_fetch_assoc($result);
         }
@@ -78,13 +82,13 @@ class BaseModel
         if ($id === false) {
             $id = $this->getId();
         }
-        $query = "DELETE FROM ".$this->getTableName()." WHERE id='$id'";
+        $query = "DELETE FROM " . $this->getTableName() . " WHERE id='$id'";
         DbConnection::executeMysqlQuery($query);
     }
 
     protected function insert()
     {
-        $querybegin = "INSERT INTO ".$this->getTableName()." (";
+        $querybegin = "INSERT INTO " . $this->getTableName() . " (";
         $queryend = ") VALUES ( ";
         foreach ($this->data as $key => $data) {
             $querybegin .= $key . ",";

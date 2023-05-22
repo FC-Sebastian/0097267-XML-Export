@@ -15,7 +15,6 @@ if (isset($_REQUEST['action'])) {
         } catch (Throwable $exc) {
             $controllerObject->setErrorMessage($exc->getMessage());
         }
-
     }
 }
 

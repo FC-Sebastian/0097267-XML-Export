@@ -1,5 +1,7 @@
 <?php
 
+namespace Classes;
+
 class Conf
 {
     private static $confarray = null;
