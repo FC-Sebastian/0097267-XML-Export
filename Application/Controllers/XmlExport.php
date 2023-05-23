@@ -17,6 +17,7 @@ class XmlExport extends BaseController
     //footer for xml file
     protected $xmlFooter = '</reviews></feed>';
 
+    //basename for generated xml file
     protected $fileNameBase = 'XML-Export';
 
     /**
