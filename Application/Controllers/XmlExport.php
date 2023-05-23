@@ -17,25 +17,33 @@ class XmlExport extends BaseController
     //footer for xml file
     protected $xmlFooter = '</reviews></feed>';
 
+    protected $fileNameBase = 'XML-Export';
+
     /**
      * exports all reviews in db as xml file for Google merchant center
      * @return void
+     * @throws Exception
      */
     public function exportAll()
     {
         $oFcExport = new FcExport();
         $oFcExport->createTableIfNotExists();
+        $this->fileNameBase .= '_ALL';
+
         $this->export();
     }
 
     /**
      * exports only reviews that weren't previously exported
      * @return void
+     * @throws Exception
      */
     public function exportNew()
     {
         $oFcExport = new FcExport();
         $oFcExport->createTableIfNotExists();
+        $this->fileNameBase .= '_NEW';
+
         $this->export(true);
     }
 
@@ -46,6 +54,7 @@ class XmlExport extends BaseController
      * if $new is set to true only exports new reviews
      * @param $new
      * @return void
+     * @throws Exception
      */
     protected function export($new = false)
     {
@@ -73,6 +82,7 @@ class XmlExport extends BaseController
      * @param $aReviewRow
      * @param $blOnlyNew
      * @return void
+     * @throws Exception
      */
     protected function exportRow($fileHandle,$aReviewArticle, $aReviewRow, $blOnlyNew = false)
     {
@@ -101,11 +111,12 @@ class XmlExport extends BaseController
      * @param $aArticle
      * @param $aReview
      * @return bool
+     * @throws Exception
      */
     protected function isReviewNew($aArticle, $aReview)
     {
         $oFcExport = new FcExport();
-        return $oFcExport->load($aArticle['kArtikel'], $aArticle['kVaterArtikel'], $aReview['kBewertung']) === false;
+        return $oFcExport->loadExport($aArticle['kArtikel'], $aArticle['kVaterArtikel'], $aReview['kBewertung']) === false;
     }
 
     /**
@@ -136,6 +147,7 @@ class XmlExport extends BaseController
      * @param $aReview
      * @param $aArticles
      * @return void
+     * @throws Exception
      */
     protected function exportToDb($aReview, $aArticles)
     {
@@ -146,9 +158,9 @@ class XmlExport extends BaseController
                 $oFcExport->setkArtikel($aArticle['kArtikel']);
                 $oFcExport->setkVaterArtikel($aArticle['kVaterArtikel']);
                 $oFcExport->setkBewertung($aReview['kBewertung']);
-                $oFcExport->setdExportDatum(date('Y-m-d', time()));
+                $oFcExport->setdExportZeit(date('Y-m-d', time()));
 
-                $oFcExport->save();
+                $oFcExport->saveExport();
             }
         }
     }
@@ -164,7 +176,7 @@ class XmlExport extends BaseController
 
         header('Content-Description: File Transfer');
         header('Content-Type: text/xml');
-        header("Content-Disposition: attachment; filename=XML-Export.xml");
+        header("Content-Disposition: attachment; filename={$this->fileNameBase}_".date('YmdHis').".xml");
         header('Content-Transfer-Encoding: binary');
         header('Expires: 0');
         header('Cache-Control: must-revalidate');

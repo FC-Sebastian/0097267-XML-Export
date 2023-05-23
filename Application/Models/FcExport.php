@@ -13,7 +13,7 @@ class FcExport extends BaseModel
     public function createTableIfNotExists()
     {
         if (mysqli_num_rows(DbConnection::executeMysqlQuery("SHOW TABLES LIKE '{$this->getTableName()}'")) === 0) {
-            DbConnection::executeMysqlQuery("CREATE TABLE {$this->getTableName()} (`kArtikel` int(10) NOT NULL,`kVaterArtikel` int(10) NOT NULL, `kBewertung` int(10) NOT NULL, `dExportDatum` date, PRIMARY KEY (`kArtikel`,`kVaterArtikel`,`kBewertung`))");
+            DbConnection::executeMysqlQuery("CREATE TABLE {$this->getTableName()} (`kArtikel` int(10) NOT NULL,`kVaterArtikel` int(10) NOT NULL, `kBewertung` int(10) NOT NULL, `dExportZeit` datetime, PRIMARY KEY (`kArtikel`,`kVaterArtikel`,`kBewertung`))");
         }
     }
 
@@ -25,7 +25,7 @@ class FcExport extends BaseModel
      * @return false|void
      * @throws Exception
      */
-    public function load($sArticleId, $sParentArticleId, $reviewId)
+    public function loadExport($sArticleId, $sParentArticleId, $reviewId)
     {
         $query = "SELECT * FROM " . $this->getTableName() . " WHERE kArtikel='$sArticleId' AND kVaterArtikel='$sParentArticleId' AND kBewertung='$reviewId';";
         $result = DbConnection::executeMySQLQuery($query);
@@ -45,7 +45,7 @@ class FcExport extends BaseModel
      * @return void
      * @throws Exception
      */
-    public function save()
+    public function saveExport()
     {
         $this->insert();
     }
