@@ -10,7 +10,7 @@
         </title>
         <link rel="stylesheet" href="<?php echo $url;?>">
     </head>
-    <body class="bg-primary bg-opacity-10" onload="<?php echo $controller->getOnload()?>">
+    <body class="bg-primary bg-opacity-10">
     <?php if ($controller->getError() !== false):?>
         <div class="bg-danger bg-opacity-25 border border-5 border-danger border-end-0 border-start-0">
             <div class="w-50 m-auto">

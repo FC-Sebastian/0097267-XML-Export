@@ -1,10 +1,18 @@
 <?php
 
+/**
+ * DbConnection handler
+ */
 class DbConnection
 {
     protected static $conn = null;
 
-    public static function getDbConnection()
+    /**
+     * static function for creating a db connecntion
+     * @return false|mysqli|null
+     * @throws Exception
+     */
+    protected static function getDbConnection()
     {
         if (self::$conn === null) {
             mysqli_report(MYSQLI_REPORT_STRICT);
@@ -22,6 +30,7 @@ class DbConnection
     }
 
     /**
+     * static function for executing sql queries
      * @param $query
      * @return bool|mysqli_result
      * @throws Exception

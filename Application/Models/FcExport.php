@@ -2,9 +2,14 @@
 
 class FcExport extends BaseModel
 {
+    // determines name of the db table for this model
     protected $tablename = 'tbewertung_fcexport';
 
-
+    /**
+     * creates db table if it doesnt exist
+     * @return void
+     * @throws Exception
+     */
     public function createTableIfNotExists()
     {
         if (mysqli_num_rows(DbConnection::executeMysqlQuery("SHOW TABLES LIKE '{$this->getTableName()}'")) === 0) {
@@ -12,6 +17,14 @@ class FcExport extends BaseModel
         }
     }
 
+    /**
+     * loads review via articleId, parentArticleId, reviewId
+     * @param $sArticleId
+     * @param $sParentArticleId
+     * @param $reviewId
+     * @return false|void
+     * @throws Exception
+     */
     public function load($sArticleId, $sParentArticleId, $reviewId)
     {
         $query = "SELECT * FROM " . $this->getTableName() . " WHERE kArtikel='$sArticleId' AND kVaterArtikel='$sParentArticleId' AND kBewertung='$reviewId';";
@@ -27,6 +40,11 @@ class FcExport extends BaseModel
         }
     }
 
+    /**
+     * inserts this object as entry into the db
+     * @return void
+     * @throws Exception
+     */
     public function save()
     {
         $this->insert();

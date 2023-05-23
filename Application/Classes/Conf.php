@@ -1,9 +1,17 @@
 <?php
 
+/**
+ * config handler
+ */
 class Conf
 {
     private static $confarray = null;
 
+    /**
+     * static function for accessing config params
+     * @param $key
+     * @return false|mixed|void
+     */
     public static function getParam($key)
     {
         if (self::$confarray === null) {

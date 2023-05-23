@@ -2,26 +2,37 @@
 
 class BaseController
 {
+    //determins whether controller starts session or not
     protected $startsSession = false;
+
+    //the name of the controllers view file
     protected $view = false;
+
+    //error message
     protected $error = false;
-    protected $onloadFuntction = "";
 
-    public function getOnload()
-    {
-        return $this->onloadFuntction;
-    }
-
+    /**
+     * sets error message for error box
+     * @param $error
+     * @return void
+     */
     public function setErrorMessage($error)
     {
         $this->error = $error;
     }
 
+    /**
+     * gets error message for error box
+     * @return bool|mixed
+     */
     public function getError()
     {
         return $this->error;
     }
 
+    /**
+     * starts session if necessary
+     */
     public function __construct()
     {
         if ($this->startsSession === true) {
@@ -29,32 +40,30 @@ class BaseController
         }
     }
 
+    /**
+     * returns title of controller's view
+     * @return mixed
+     */
     public function getTitle()
     {
         return $this->title;
     }
 
+    /**
+     * appends given string to base URL found in config and returns result
+     * @param $sitename
+     * @return string
+     */
     public function getUrl($sitename = "")
     {
         return conf::getParam("url") . $sitename;
     }
 
-    public function getRequestParameter($key, $default = false)
-    {
-        if (isset($_REQUEST[$key])) {
-            return $_REQUEST[$key];
-        }
-        return $default;
-    }
-
-    public function getPictureUrl($filename)
-    {
-        if (!empty($filename)) {
-            return conf::getParam("url") . "pics/" . $filename;
-        }
-        return "https://secure.gravatar.com/avatar/cb665e6a65789619c27932fc7b51f8dc?default=mm&size=200&rating=G";
-    }
-
+    /**
+     * loads views and renders page
+     * @return void
+     * @throws Exception
+     */
     public function render()
     {
         if ($this->view === false) {
@@ -82,11 +91,5 @@ class BaseController
         include __DIR__ . "/../../Views/header.php";
         echo $output;
         include __DIR__ . "/../../Views/footer.php";
-    }
-
-    protected function redirect($url)
-    {
-        header("location: " . $url);
-        exit();
     }
 }
