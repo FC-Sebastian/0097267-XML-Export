@@ -23,6 +23,8 @@ class XmlExport extends BaseController
      */
     public function exportAll()
     {
+        $oFcExport = new FcExport();
+        $oFcExport->createTableIfNotExists();
         $this->export();
     }
 
@@ -32,6 +34,8 @@ class XmlExport extends BaseController
      */
     public function exportNew()
     {
+        $oFcExport = new FcExport();
+        $oFcExport->createTableIfNotExists();
         $this->export(true);
     }
 
@@ -136,7 +140,6 @@ class XmlExport extends BaseController
     protected function exportToDb($aReview, $aArticles)
     {
         $oFcExport = new FcExport();
-        $oFcExport->createTableIfNotExists();
 
         foreach ($aArticles as $aArticle) {
             if ($this->isReviewNew($aArticle,$aReview) === true) {
