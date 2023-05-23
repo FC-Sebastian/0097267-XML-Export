@@ -18,7 +18,7 @@ class XmlExport extends BaseController
     protected $xmlFooter = '</reviews></feed>';
 
     //basename for generated xml file
-    protected $fileNameBase = 'XML-Export';
+    protected $fileNameBase = 'GoogleReviews';
 
     /**
      * exports all reviews in db as xml file for Google merchant center
