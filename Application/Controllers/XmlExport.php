@@ -12,7 +12,7 @@ class XmlExport extends BaseController
     protected $title = 'XML-Export';
 
     //header for xml file
-    protected $xmlHeader = '<?xml version="1.0" encoding="UTF-8"?><feed><publisher><name>REAVET</name></publisher><reviews>';
+    protected $xmlHeader = '<?xml version="1.0" encoding="UTF-8"?><feed><version>2.3</version><publisher><name>REAVET</name></publisher><reviews>';
 
     //footer for xml file
     protected $xmlFooter = '</reviews></feed>';
@@ -131,7 +131,8 @@ class XmlExport extends BaseController
     protected function exportToXML($fileHandle, $aReview, $aArticles, $sReviewUrl)
     {
         $aReview = $this->xmlEncode($aReview);
-        $sXmlString = "<review><review_id>{$aReview['kBewertung']}</review_id><reviewer><name>{$aReview['cName']}</name></reviewer><review_timestamp>{$aReview['dDatum']}</review_timestamp><title>{$aReview['cTitel']}</title><content>{$aReview['cText']}</content><review_url type='group'>{$sReviewUrl}</review_url><ratings><overall min='1' max='5'>{$aReview['nSterne']}</overall></ratings><products>";
+        $formattedTime = date('c', strtotime($aReview['dDatum']));
+        $sXmlString = "<review><review_id>{$aReview['kBewertung']}</review_id><reviewer><name>{$aReview['cName']}</name></reviewer><review_timestamp>{$formattedTime}</review_timestamp><title>{$aReview['cTitel']}</title><content>{$aReview['cText']}</content><review_url type='group'>{$sReviewUrl}</review_url><ratings><overall min='1' max='5'>{$aReview['nSterne']}</overall></ratings><products>";
 
         foreach ($aArticles as $aArticle) {
             $aArticle = $this->xmlEncode($aArticle);
@@ -159,7 +160,7 @@ class XmlExport extends BaseController
                 $oFcExport->setkArtikel($aArticle['kArtikel']);
                 $oFcExport->setkVaterArtikel($aArticle['kVaterArtikel']);
                 $oFcExport->setkBewertung($aReview['kBewertung']);
-                $oFcExport->setdExportZeit(date('Y-m-d', time()));
+                $oFcExport->setdExportZeit(date('Y-m-d H:i:s', time()));
 
                 $oFcExport->saveExport();
             }
