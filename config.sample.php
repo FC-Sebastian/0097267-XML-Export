@@ -6,5 +6,5 @@ $configarray = [
     "dbhost" => "YOUR VALUE HERE",
     "dbuser" => "YOUR VALUE HERE",
     "dbpass" => "YOUR VALUE HERE",
-    "database" => "YOUR VALUE HERE"
+    "db" => "YOUR VALUE HERE"
 ];

@@ -1,18 +1,14 @@
 <?php
 
-
-namespace Models;
-
-use Classes\DbConnection;
-
 class BaseModel
 {
     protected $tablename = false;
+    protected $primary = false;
     public $data = [];
+
 
     public function __call($name, $arguments)
     {
-        $name = strtolower($name);
         $arguments = implode($arguments);
         if (substr($name, 0, 3) == "get") {
             $name = str_replace("get", "", $name);
@@ -49,14 +45,18 @@ class BaseModel
         return $returnarray;
     }
 
-    public function load($id)
+    public function load($id, $getArray = false)
     {
-        $query = "SELECT * FROM " . $this->getTableName() . " WHERE id=$id;";
+        $query = "SELECT * FROM " . $this->getTableName() . " WHERE {$this->primary}='$id';";
         $result = DbConnection::executeMySQLQuery($query);
         if (mysqli_num_rows($result) == 0) {
             return false;
         }
         $dataArray = mysqli_fetch_assoc($result);
+        if ($getArray === true) {
+            return $dataArray;
+        }
+
         foreach ($dataArray as $key => $value) {
             $setString = "set" . $key;
             $this->$setString($value);
@@ -65,12 +65,13 @@ class BaseModel
 
     public function save()
     {
-        if (isset($this->data["id"])) {
-            $query = "SELECT id FROM " . $this->getTableName() . " WHERE id=" . $this->getId();
+        $fncName = "get{$this->primary}";
+        if (isset($this->data["{$this->primary}"])) {
+            $query = "SELECT {$this->primary} FROM " . $this->getTableName() . " WHERE {$this->primary}=" . $this->$fncName();
             $result = DbConnection::executeMySQLQuery($query);
             $result = mysqli_fetch_assoc($result);
         }
-        if (isset($result["id"]) && $this->getId() == $result["id"]) {
+        if (isset($result["{$this->primary}"]) && $this->$fncName() == $result["{$this->primary}"]) {
             $this->update();
         } else {
             $this->insert();
@@ -79,10 +80,11 @@ class BaseModel
 
     public function delete($id = false)
     {
+        $fncName = "get{$this->primary}";
         if ($id === false) {
-            $id = $this->getId();
+            $id = $this->$fncName();
         }
-        $query = "DELETE FROM " . $this->getTableName() . " WHERE id='$id'";
+        $query = "DELETE FROM " . $this->getTableName() . " WHERE {$this->primary}='$id'";
         DbConnection::executeMysqlQuery($query);
     }
 
@@ -100,13 +102,27 @@ class BaseModel
 
     protected function update()
     {
+        $fncName = "get{$this->primary}";
         $querybegin = "UPDATE " . $this->getTableName() . " ";
         $querymid = "SET ";
-        $queryend = "WHERE id = " . $this->getId();
+        $queryend = "WHERE {$this->primary} = " . $this->$fncName();
         foreach ($this->data as $key => $data) {
             $querymid .= "" . $key . "='" . $data . "',";
         }
         $query = $querybegin . substr($querymid, 0, -1) . $queryend;
         DbConnection::executeMySQLQuery($query);
+    }
+
+    public function rowGenerator($where = false)
+    {
+        $query = "SELECT * FROM {$this->getTableName()}";
+        if ($where !== false) {
+            $query .= " WHERE {$where}";
+        }
+
+        $result = DbConnection::executeMysqlQuery($query);
+        while ($row = mysqli_fetch_assoc($result)) {
+            yield $row;
+        }
     }
 }

@@ -1,8 +1,5 @@
 <?php
 
-
-namespace Classes;
-
 class DbConnection
 {
     protected static $conn = null;
