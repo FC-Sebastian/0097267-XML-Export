@@ -1,23 +1,23 @@
 <?php
 include __DIR__."/autoloader.php";
 
-$controller = "XmlExport";
+$sController = "XmlExport";
 if (isset($_REQUEST['controller'])) {
-    $controller = $_REQUEST['controller'];
+    $sController = $_REQUEST['controller'];
 }
 
-$controllerObject = new $controller();
+$oControllerObject = new $sController();
 if (isset($_REQUEST['action'])) {
-    $action = strtolower($_REQUEST['action']);
-    if (method_exists($controllerObject, $action)) {
+    $sAction = strtolower($_REQUEST['action']);
+    if (method_exists($oControllerObject, $sAction)) {
         try {
-            $controllerObject->$action();
+            $oControllerObject->$sAction();
         } catch (Throwable $exc) {
-            $controllerObject->setErrorMessage($exc->getMessage());
+            $oControllerObject->setErrorMessage($exc->getMessage());
         }
     }
 }
 
-$controllerObject->render();
+$oControllerObject->render();
 
 

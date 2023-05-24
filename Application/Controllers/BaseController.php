@@ -2,94 +2,94 @@
 
 class BaseController
 {
-    //determins whether controller starts session or not
-    protected $startsSession = false;
-
-    //the name of the controllers view file
-    protected $view = false;
-
-    //error message
-    protected $error = false;
+    /**
+     * Name of view File
+     *
+     * @var bool
+     */
+    protected $sView = false;
 
     /**
-     * sets error message for error box
-     * @param $error
+     * Error message
+     *
+     * @var bool
+     */
+    protected $sError = false;
+
+    /**
+     * Sets error message for error box
+     *
+     * @param string $sError
      * @return void
      */
-    public function setErrorMessage($error)
+    public function setErrorMessage($sError)
     {
-        $this->error = $error;
+        $this->sError = $sError;
     }
 
     /**
-     * gets error message for error box
-     * @return bool|mixed
+     * Gets error message for error box
+     *
+     * @return bool|string
      */
     public function getError()
     {
-        return $this->error;
+        return $this->sError;
     }
 
     /**
-     * starts session if necessary
-     */
-    public function __construct()
-    {
-        if ($this->startsSession === true) {
-            session_start();
-        }
-    }
-
-    /**
-     * returns title of controller's view
-     * @return mixed
+     * Returns title of controller's view
+     *
+     * @return bool|string
      */
     public function getTitle()
     {
-        return $this->title;
+        return $this->sTitle;
     }
 
     /**
-     * appends given string to base URL found in config and returns result
-     * @param $sitename
+     * Appends given string to base URL found in config and returns result
+     *
+     * @param string $sSitename
      * @return string
      */
-    public function getUrl($sitename = "")
+    public function getUrl($sSitename = "")
     {
-        return conf::getParam("url") . $sitename;
+        return conf::getParam("url") . $sSitename;
     }
 
     /**
-     * loads views and renders page
+     * Loads views and renders page
+     *
      * @return void
      * @throws Exception
      */
     public function render()
     {
-        if ($this->view === false) {
+        if ($this->sView === false) {
             throw new Exception("NO VIEW FOUND");
         }
 
-        $viewPath = __DIR__ . "/../../Views/" . $this->view . ".php";
-        if (!file_exists($viewPath)) {
+        $sViewPath = __DIR__ . "/../../Views/" . $this->sView . ".php";
+        if (!file_exists($sViewPath)) {
             throw new Exception("VIEW FILE NOT FOUND");
         }
 
-        $controller = $this;
+        $oController = $this;
 
         ob_start();
         try {
-            $url = $controller->getUrl("css/bootstrap.css");
-            $title = $controller->getTitle();
-            include $viewPath;
+            $sUrl = $oController->getUrl("css/bootstrap.css");
+            $sTitle = $oController->getTitle();
+            include $sViewPath;
         } catch (Throwable $exc) {
-            $controller->setErrorMessage($exc->getMessage());
+            $oController->setErrorMessage($exc->getMessage());
         }
-        $output = ob_get_contents();
+        $sOutput = ob_get_contents();
         ob_end_clean();
 
         include __DIR__ . "/../../Views/header.php";
-        echo $output;
+        echo $sOutput;
         include __DIR__ . "/../../Views/footer.php";
     }
 }

@@ -2,11 +2,16 @@
 
 class FcExport extends BaseModel
 {
-    // determines name of the db table for this model
-    protected $tablename = 'tbewertung_fcexport';
+    /**
+     * Determines name of the db table for this model
+     *
+     * @var string
+     */
+    protected $sTablename = 'tbewertung_fcexport';
 
     /**
-     * creates db table if it doesnt exist
+     * Creates db table if it doesnt exist
+     *
      * @return void
      * @throws Exception
      */
@@ -18,30 +23,32 @@ class FcExport extends BaseModel
     }
 
     /**
-     * loads review via articleId, parentArticleId, reviewId
-     * @param $sArticleId
-     * @param $sParentArticleId
-     * @param $reviewId
+     * Loads review via articleId, parentArticleId, reviewId
+     *
+     * @param string $sArticleId
+     * @param string $sParentArticleId
+     * @param string $sReviewId
      * @return false|void
      * @throws Exception
      */
-    public function loadExport($sArticleId, $sParentArticleId, $reviewId)
+    public function loadExport($sArticleId, $sParentArticleId, $sReviewId)
     {
-        $query = "SELECT * FROM " . $this->getTableName() . " WHERE kArtikel='$sArticleId' AND kVaterArtikel='$sParentArticleId' AND kBewertung='$reviewId';";
-        $result = DbConnection::executeMySQLQuery($query);
-        if (mysqli_num_rows($result) == 0) {
+        $sQuery = "SELECT * FROM " . $this->getTableName() . " WHERE kArtikel='$sArticleId' AND kVaterArtikel='$sParentArticleId' AND kBewertung='$sReviewId';";
+        $oResult = DbConnection::executeMySQLQuery($sQuery);
+        if (mysqli_num_rows($oResult) == 0) {
             return false;
         }
-        $dataArray = mysqli_fetch_assoc($result);
+        $aDataArray = mysqli_fetch_assoc($oResult);
 
-        foreach ($dataArray as $key => $value) {
+        foreach ($aDataArray as $key => $value) {
             $setString = "set" . $key;
             $this->$setString($value);
         }
     }
 
     /**
-     * inserts this object as entry into the db
+     * Inserts this object as entry into the db
+     *
      * @return void
      * @throws Exception
      */

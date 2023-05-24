@@ -2,9 +2,17 @@
 
 class Article extends BaseModel
 {
-    // determines name of the db table for this model
-    protected $tablename = 'tartikel';
+    /**
+     * Determines name of the db table for this model
+     *
+     * @var string
+     */
+    protected $sTablename = 'tartikel';
 
-    //primary index of the db table
-    protected $primary = 'kArtikel';
+    /**
+     * Primary index of the db table
+     *
+     * @var string
+     */
+    protected $sPrimary = 'kArtikel';
 }

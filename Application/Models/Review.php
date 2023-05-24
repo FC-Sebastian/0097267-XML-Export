@@ -2,9 +2,17 @@
 
 class Review extends BaseModel
 {
-    //db table name
-    protected $tablename = 'tbewertung';
+    /**
+     * Db table name
+     *
+     * @var string
+     */
+    protected $sTablename = 'tbewertung';
 
-    //primary index of db table
-    protected $primary = 'kBewertung';
+    /**
+     * Primary index of db table
+     *
+     * @var string
+     */
+    protected $sPrimary = 'kBewertung';
 }

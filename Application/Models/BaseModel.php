@@ -2,89 +2,105 @@
 
 class BaseModel
 {
-    // determines name of the db table for this model
-    protected $tablename = false;
-
-    //primary index of the db table
-    protected $primary = false;
-
-    //used for storing db data
-    public $data = [];
+    /**
+     * Name of the db table for this model
+     *
+     * @var bool
+     */
+    protected $sTablename = false;
 
     /**
-     * getter und setter for column values
-     * @param $name
-     * @param $arguments
+     * Primary index of the db table
+     *
+     * @var bool
+     */
+    protected $sPrimary = false;
+
+    /**
+     * Used for storing db data
+     *
+     * @var array
+     */
+    public $aData = [];
+
+    /**
+     * Getter und setter for column values
+     *
+     * @param string $sName
+     * @param mixed $arguments
      * @return mixed|void
      */
-    public function __call($name, $arguments)
+    public function __call($sName, $arguments)
     {
         $arguments = implode($arguments);
-        if (substr($name, 0, 3) == "get") {
-            $name = str_replace("get", "", $name);
-            if (isset($this->data[$name])) {
-                return $this->data[$name];
+        if (substr($sName, 0, 3) == "get") {
+            $sName = str_replace("get", "", $sName);
+            if (isset($this->aData[$sName])) {
+                return $this->aData[$sName];
             }
             return;
         }
-        if (substr($name, 0, 3) == "set") {
-            $name = str_replace("set", "", $name);
-            $this->data[$name] = $arguments;
+        if (substr($sName, 0, 3) == "set") {
+            $sName = str_replace("set", "", $sName);
+            $this->aData[$sName] = $arguments;
         }
     }
 
     /**
-     * returns name of db table
-     * @return bool|mixed|void
+     * Returns name of db table
+     *
+     * @return string|void
      */
     public function getTableName()
     {
-        if ($this->tablename !== false) {
-            return $this->tablename;
+        if ($this->sTablename !== false) {
+            return $this->sTablename;
         }
     }
 
     /**
-     * loads entry by primary index and assigns result to this object
+     * Loads entry by primary index and assigns result to this object
      * if $getArray is true instead returns result as array
-     * @param $id
-     * @param $getArray
-     * @return array|false|void|null
+     *
+     * @param string $sId
+     * @param bool $blGetArray
+     * @return array|false|void
      * @throws Exception
      */
-    public function load($id, $getArray = false)
+    public function load($sId, $blGetArray = false)
     {
-        $query = "SELECT * FROM " . $this->getTableName() . " WHERE {$this->primary}='$id';";
-        $result = DbConnection::executeMySQLQuery($query);
-        if (mysqli_num_rows($result) == 0) {
+        $sQuery = "SELECT * FROM " . $this->getTableName() . " WHERE {$this->sPrimary}='$sId';";
+        $oResult = DbConnection::executeMySQLQuery($sQuery);
+        if (mysqli_num_rows($oResult) == 0) {
             return false;
         }
-        $dataArray = mysqli_fetch_assoc($result);
-        if ($getArray === true) {
-            return $dataArray;
+        $aDataArray = mysqli_fetch_assoc($oResult);
+        if ($blGetArray === true) {
+            return $aDataArray;
         }
 
-        foreach ($dataArray as $key => $value) {
+        foreach ($aDataArray as $key => $value) {
             $setString = "set" . $key;
             $this->$setString($value);
         }
     }
 
     /**
-     * determines whether an entry with the same primary index exist
+     * Determines whether an entry with the same primary index exist
      * if one does its updated otherwise a new entry is inserted
+     *
      * @return void
      * @throws Exception
      */
     public function save()
     {
-        $fncName = "get{$this->primary}";
-        if (isset($this->data["{$this->primary}"])) {
-            $query = "SELECT {$this->primary} FROM " . $this->getTableName() . " WHERE {$this->primary}=" . $this->$fncName();
-            $result = DbConnection::executeMySQLQuery($query);
-            $result = mysqli_fetch_assoc($result);
+        $sFncName = "get{$this->sPrimary}";
+        if (isset($this->aData["{$this->sPrimary}"])) {
+            $sQuery = "SELECT {$this->sPrimary} FROM " . $this->getTableName() . " WHERE {$this->sPrimary}=" . $this->$sFncName();
+            $oResult = DbConnection::executeMySQLQuery($sQuery);
+            $oResult = mysqli_fetch_assoc($oResult);
         }
-        if (isset($result["{$this->primary}"]) && $this->$fncName() == $result["{$this->primary}"]) {
+        if (isset($oResult["{$this->sPrimary}"]) && $this->$sFncName() == $oResult["{$this->sPrimary}"]) {
             $this->update();
         } else {
             $this->insert();
@@ -92,72 +108,76 @@ class BaseModel
     }
 
     /**
-     * deletes entry via the given id or via the id of this object
-     * @param $id
+     * Deletes entry via the given id or via the id of this object
+     *
+     * @param string $sId
      * @return void
      * @throws Exception
      */
-    public function delete($id = false)
+    public function delete($sId = false)
     {
-        $fncName = "get{$this->primary}";
-        if ($id === false) {
-            $id = $this->$fncName();
+        $sFncName = "get{$this->sPrimary}";
+        if ($sId === false) {
+            $sId = $this->$sFncName();
         }
-        $query = "DELETE FROM " . $this->getTableName() . " WHERE {$this->primary}='$id'";
-        DbConnection::executeMysqlQuery($query);
+        $sQuery = "DELETE FROM " . $this->getTableName() . " WHERE {$this->sPrimary}='$sId'";
+        DbConnection::executeMysqlQuery($sQuery);
     }
 
     /**
-     * inserts this object as an entry into the db
+     * Inserts this object as an entry into the db
+     *
      * @return void
      * @throws Exception
      */
     protected function insert()
     {
-        $querybegin = "INSERT INTO " . $this->getTableName() . " (";
-        $queryend = ") VALUES ( ";
-        foreach ($this->data as $key => $data) {
-            $querybegin .= $key . ",";
-            $queryend .= "'" . $data . "',";
+        $sQuerybegin = "INSERT INTO " . $this->getTableName() . " (";
+        $sQueryend = ") VALUES ( ";
+        foreach ($this->aData as $key => $data) {
+            $sQuerybegin .= $key . ",";
+            $sQueryend .= "'" . $data . "',";
         }
-        $query = substr($querybegin, 0, -1) . substr($queryend, 0, -1) . ")";
-        DbConnection::executeMysqlQuery($query);
+        $sQuery = substr($sQuerybegin, 0, -1) . substr($sQueryend, 0, -1) . ")";
+        DbConnection::executeMysqlQuery($sQuery);
     }
 
     /**
-     * updates an existing database entry with params from this object
+     * Updates an existing database entry with params from this object
+     *
      * @return void
      * @throws Exception
      */
     protected function update()
     {
-        $fncName = "get{$this->primary}";
-        $querybegin = "UPDATE " . $this->getTableName() . " ";
-        $querymid = "SET ";
-        $queryend = "WHERE {$this->primary} = " . $this->$fncName();
-        foreach ($this->data as $key => $data) {
-            $querymid .= "" . $key . "='" . $data . "',";
+        $sFncName = "get{$this->sPrimary}";
+        $sQuerybegin = "UPDATE " . $this->getTableName() . " ";
+        $sQuerymid = "SET ";
+        $sQueryend = "WHERE {$this->sPrimary} = " . $this->$sFncName();
+        foreach ($this->aData as $key => $data) {
+            $sQuerymid .= "" . $key . "='" . $data . "',";
         }
-        $query = $querybegin . substr($querymid, 0, -1) . $queryend;
-        DbConnection::executeMySQLQuery($query);
+        $sQuery = $sQuerybegin . substr($sQuerymid, 0, -1) . $sQueryend;
+        DbConnection::executeMySQLQuery($sQuery);
     }
 
     /**
-     * a generator method which loads all entries from the db and yields each row as an array
-     * @param $where
+     * A generator method which loads all entries from the db and yields each row as an array
+     *
+     * @param string $sWhere
      * @return Generator
      * @throws Exception
      */
-    public function rowGenerator($where = false)
+    public function rowGenerator($sWhere = false)
     {
-        $query = "SELECT * FROM {$this->getTableName()}";
-        if ($where !== false) {
-            $query .= " WHERE {$where}";
+        $sQuery = "SELECT * FROM {$this->getTableName()}";
+        if ($sWhere !== false) {
+            $sQuery .= " WHERE {$sWhere}";
         }
 
-        $result = DbConnection::executeMysqlQuery($query);
-        while ($row = mysqli_fetch_assoc($result)) {
-            yield $row;
+        $oResult = DbConnection::executeMysqlQuery($sQuery);
+        while ($aRow = mysqli_fetch_assoc($oResult)) {
+            yield $aRow;
         }
     }
 }

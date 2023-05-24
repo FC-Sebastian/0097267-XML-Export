@@ -5,44 +5,51 @@
  */
 class DbConnection
 {
-    protected static $conn = null;
+    /**
+     * Database connection object
+     *
+     * @var null|object
+     */
+    protected static $oConn = null;
 
     /**
-     * static function for creating a db connecntion
+     * Static function for creating a db connecntion
+     *
      * @return false|mysqli|null
      * @throws Exception
      */
     protected static function getDbConnection()
     {
-        if (self::$conn === null) {
+        if (self::$oConn === null) {
             mysqli_report(MYSQLI_REPORT_STRICT);
-            self::$conn = mysqli_connect(
+            self::$oConn = mysqli_connect(
                 Conf::getParam("dbhost"),
                 Conf::getParam("dbuser"),
                 Conf::getParam("dbpass"),
                 Conf::getParam("db")
             );
-            if (self::$conn->connect_error) {
+            if (self::$oConn->connect_error) {
                 throw new Exception("Connection failed: " . mysqli_connect_error());
             }
         }
-        return self::$conn;
+        return self::$oConn;
     }
 
     /**
-     * static function for executing sql queries
-     * @param $query
+     * Static function for executing sql queries
+     *
+     * @param string $sQuery
      * @return bool|mysqli_result
      * @throws Exception
      */
-    public static function executeMysqlQuery($query)
+    public static function executeMysqlQuery($sQuery)
     {
-        $result = mysqli_query(self::getDbConnection(), $query);
-        $error = mysqli_error(self::getDbConnection());
-        if (!empty($error)) {
-            throw new Exception("MYSQL-Error: " . $error . " in Query: " . $query);
+        $oResult = mysqli_query(self::getDbConnection(), $sQuery);
+        $sError = mysqli_error(self::getDbConnection());
+        if (!empty($sError)) {
+            throw new Exception("MYSQL-Error: " . $sError . " in Query: " . $sQuery);
         }
         //echo "<br>",$query,"<br>";
-        return $result;
+        return $oResult;
     }
 }

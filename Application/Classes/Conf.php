@@ -1,28 +1,34 @@
 <?php
 
 /**
- * config handler
+ * Config handler
  */
 class Conf
 {
-    private static $confarray = null;
+    /**
+     * Array of Config params
+     *
+     * @var null|array
+     */
+    private static $aConfarray = null;
 
     /**
-     * static function for accessing config params
-     * @param $key
-     * @return false|mixed|void
+     * Static function for accessing config params
+     *
+     * @param string $sKey
+     * @return false|mixed
      */
-    public static function getParam($key)
+    public static function getParam($sKey)
     {
-        if (self::$confarray === null) {
+        if (self::$aConfarray === null) {
             if (!file_exists(__DIR__ . "/../../config.php")) {
                 exit("Keine config.php gefunden");
             }
             include __DIR__ . "/../../config.php";
-            self::$confarray = $configarray;
+            self::$aConfarray = $aConfigarray;
         }
-        if (isset(self::$confarray[$key])) {
-            return self::$confarray[$key];
+        if (isset(self::$aConfarray[$sKey])) {
+            return self::$aConfarray[$sKey];
         }
         return false;
     }

@@ -2,26 +2,51 @@
 
 class XmlExport extends BaseController
 {
-    //view file name
-    protected $view = 'xmlExport';
-
-    // base url of shop where reviews are found
-    protected $shopUrl = 'https://reavet.de/';
-
-    //title of page
-    protected $title = 'XML-Export';
-
-    //header for xml file
-    protected $xmlHeader = '<?xml version="1.0" encoding="UTF-8"?><feed><version>2.3</version><publisher><name>REAVET</name></publisher><reviews>';
-
-    //footer for xml file
-    protected $xmlFooter = '</reviews></feed>';
-
-    //basename for generated xml file
-    protected $fileNameBase = 'GoogleReviews';
+    /**
+     * View file name
+     *
+     * @var string
+     */
+    protected $sView = 'xmlExport';
 
     /**
-     * exports all reviews in db as xml file for Google merchant center
+     * Base url of shop where reviews are found
+     *
+     * @var string
+     */
+    protected $sShopUrl = 'https://reavet.de/';
+
+    /**
+     * Title of page
+     *
+     * @var string
+     */
+    protected $sTitle = 'XML-Export';
+
+    /**
+     * Header for xml file
+     *
+     * @var string
+     */
+    protected $sXmlHeader = '<?xml version="1.0" encoding="UTF-8"?><feed><version>2.3</version><publisher><name>REAVET</name></publisher><reviews>';
+
+    /**
+     * Footer for xml file
+     *
+     * @var string
+     */
+    protected $sXmlFooter = '</reviews></feed>';
+
+    /**
+     * Basename for generated xml file
+     *
+     * @var string
+     */
+    protected $sFileNameBase = 'GoogleReviews';
+
+    /**
+     * Exports all reviews in db as xml file for Google merchant center
+     *
      * @return void
      * @throws Exception
      */
@@ -29,13 +54,14 @@ class XmlExport extends BaseController
     {
         $oFcExport = new FcExport();
         $oFcExport->createTableIfNotExists();
-        $this->fileNameBase .= '_ALL';
+        $this->sFileNameBase .= '_ALL';
 
         $this->export();
     }
 
     /**
-     * exports only reviews that weren't previously exported
+     * Exports only reviews that weren't previously exported
+     *
      * @return void
      * @throws Exception
      */
@@ -43,49 +69,51 @@ class XmlExport extends BaseController
     {
         $oFcExport = new FcExport();
         $oFcExport->createTableIfNotExists();
-        $this->fileNameBase .= '_NEW';
+        $this->sFileNameBase .= '_NEW';
 
         $this->export(true);
     }
 
     /**
-     * main export method
+     * Main export method
      * loops through active reviews and exports them
      * disregards reviews for which no article can be found
      * if $new is set to true only exports new reviews
-     * @param $new
+     *
+     * @param bool $blNew
      * @return void
      * @throws Exception
      */
-    protected function export($new = false)
+    protected function export($blNew = false)
     {
         $tmp = tmpfile();
         $oArticle = new Article();
         $oReview = new Review();
-        fwrite($tmp, $this->xmlHeader);
+        fwrite($tmp, $this->sXmlHeader);
 
         foreach ($oReview->rowGenerator("nAktiv = '1'") as $aReviewRow) {
             $aReviewArticle = $oArticle->load($aReviewRow['kArtikel'], true);
 
             if ($aReviewArticle !== false) {
-                $this->exportRow($tmp, $aReviewArticle, $aReviewRow, $new);
+                $this->exportRow($tmp, $aReviewArticle, $aReviewRow, $blNew);
             }
         }
 
-        fwrite($tmp, $this->xmlFooter);
+        fwrite($tmp, $this->sXmlFooter);
         $this->downloadXml($tmp);
     }
 
     /**
-     * exports a single review
-     * @param $fileHandle
-     * @param $aReviewArticle
-     * @param $aReviewRow
-     * @param $blOnlyNew
+     * Exports a single review
+     *
+     * @param object $oFileHandle
+     * @param array $aReviewArticle
+     * @param array $aReviewRow
+     * @param bool $blOnlyNew
      * @return void
      * @throws Exception
      */
-    protected function exportRow($fileHandle,$aReviewArticle, $aReviewRow, $blOnlyNew = false)
+    protected function exportRow($oFileHandle, $aReviewArticle, $aReviewRow, $blOnlyNew = false)
     {
         $oArticle = new Article();
         $aArticles = [];
@@ -102,15 +130,16 @@ class XmlExport extends BaseController
         }
 
         if (!empty($aArticles)) {
-            $this->exportToXML($fileHandle, $aReviewRow, $aArticles, $this->shopUrl.$aReviewArticle['cSeo']);
+            $this->exportToXML($oFileHandle, $aReviewRow, $aArticles, $this->sShopUrl.$aReviewArticle['cSeo']);
             $this->exportToDb($aReviewRow, $aArticles);
         }
     }
 
     /**
-     * uses article and review to check if the review is new
-     * @param $aArticle
-     * @param $aReview
+     * Uses article and review to check if the review is new
+     *
+     * @param array $aArticle
+     * @param array $aReview
      * @return bool
      * @throws Exception
      */
@@ -121,33 +150,71 @@ class XmlExport extends BaseController
     }
 
     /**
-     * builds xml string for a single review and writes it to the given file
-     * @param $fileHandle
-     * @param $aReview
-     * @param $aArticles
-     * @param $sReviewUrl
+     * Builds xml string for a single review and writes it to the given file
+     *
+     * @param object $oFileHandle
+     * @param array $aReview
+     * @param array $aArticles
+     * @param string $sReviewUrl
      * @return void
      */
-    protected function exportToXML($fileHandle, $aReview, $aArticles, $sReviewUrl)
+    protected function exportToXML($oFileHandle, $aReview, $aArticles, $sReviewUrl)
     {
         $aReview = $this->xmlEncode($aReview);
         $formattedTime = date('c', strtotime($aReview['dDatum']));
-        $sXmlString = "<review><review_id>{$aReview['kBewertung']}</review_id><reviewer><name>{$aReview['cName']}</name></reviewer><review_timestamp>{$formattedTime}</review_timestamp><title>{$aReview['cTitel']}</title><content>{$aReview['cText']}</content><review_url type='group'>{$sReviewUrl}</review_url><ratings><overall min='1' max='5'>{$aReview['nSterne']}</overall></ratings><products>";
+        $sXmlString  = "<review>";
+        $sXmlString .= "    <review_id>{$aReview['kBewertung']}</review_id>";
+        $sXmlString .= "    <reviewer>";
+        $sXmlString .= "        <name>{$aReview['cName']}</name>";
+        $sXmlString .= "    </reviewer>";
+        $sXmlString .= "    <review_timestamp>{$formattedTime}</review_timestamp>";
+        $sXmlString .= "    <title>{$aReview['cTitel']}</title>";
+        $sXmlString .= "    <content>{$aReview['cText']}</content>";
+        $sXmlString .= "    <review_url type='group'>{$sReviewUrl}</review_url>";
+        $sXmlString .= "    <ratings>";
+        $sXmlString .= "        <overall min='1' max='5'>{$aReview['nSterne']}</overall>";
+        $sXmlString .= "    </ratings>";
+        $sXmlString .= "    <products>";
+        $sXmlString .= $this->getProductsString($aArticles);
+        $sXmlString .= "    </products>";
+        $sXmlString .= "</review>";
 
-        foreach ($aArticles as $aArticle) {
-            $aArticle = $this->xmlEncode($aArticle);
-            $productString = "<product><product_ids><gtins><gtin>{$aArticle['cBarcode']}</gtin></gtins><skus><sku>{$aArticle['cArtNr']}</sku></skus></product_ids><product_name>{$aArticle['cName']}</product_name><product_url>".$this->shopUrl.$aArticle['cSeo']."</product_url></product>";
-            $sXmlString .= $productString;
-        }
-        $sXmlString .= "</products></review>";
-
-        fwrite($fileHandle, $sXmlString);
+        fwrite($oFileHandle, $sXmlString);
     }
 
     /**
-     * checks whether a review is already in the database and inserts it if not
-     * @param $aReview
-     * @param $aArticles
+     * Builds xml string from given articles and returns it
+     *
+     * @param array $aArticles
+     * @return string
+     */
+    protected function getProductsString($aArticles)
+    {
+        $sReturn = '';
+        foreach ($aArticles as $aArticle) {
+            $aArticle = $this->xmlEncode($aArticle);
+            $sProductString  = "        <product>";
+            $sProductString .= "            <product_ids>";
+            $sProductString .= "                <gtins>";
+            $sProductString .= "                    <gtin>{$aArticle['cBarcode']}</gtin>";
+            $sProductString .= "                </gtins>";
+            $sProductString .= "                <skus>";
+            $sProductString .= "                    <sku>{$aArticle['cArtNr']}</sku>";
+            $sProductString .= "                </skus>";
+            $sProductString .= "            </product_ids>";
+            $sProductString .= "            <product_name>{$aArticle['cName']}</product_name>";
+            $sProductString .= "            <product_url>".$this->sShopUrl.$aArticle['cSeo']."</product_url>";
+            $sProductString .= "        </product>";
+            $sReturn .= $sProductString;
+        }
+        return $sReturn;
+    }
+
+    /**
+     * Checks whether a review is already in the database and inserts it if not
+     *
+     * @param array $aReview
+     * @param array $aArticles
      * @return void
      * @throws Exception
      */
@@ -168,17 +235,18 @@ class XmlExport extends BaseController
     }
 
     /**
-     * lets user download the exported xml file and deletes temp file
-     * @param $fileHandle
+     * Lets user download the exported xml file and deletes temp file
+     *
+     * @param object $oFileHandle
      * @return void
      */
-    protected function downloadXml($fileHandle)
+    protected function downloadXml($oFileHandle)
     {
-        $sPath = stream_get_meta_data($fileHandle)['uri'];
+        $sPath = stream_get_meta_data($oFileHandle)['uri'];
 
         header('Content-Description: File Transfer');
         header('Content-Type: text/xml');
-        header("Content-Disposition: attachment; filename={$this->fileNameBase}_".date('YmdHis').".xml");
+        header("Content-Disposition: attachment; filename={$this->sFileNameBase}_".date('YmdHis').".xml");
         header('Content-Transfer-Encoding: binary');
         header('Expires: 0');
         header('Cache-Control: must-revalidate');
@@ -188,13 +256,14 @@ class XmlExport extends BaseController
         ob_clean();
         flush();
         readfile($sPath);
-        fclose($fileHandle);
+        fclose($oFileHandle);
     }
 
     /**
-     * encodes all entries in a given array to be xml compatible and returns the converted array
-     * @param $aArray
-     * @return mixed
+     * Encodes all entries in a given array to be xml compatible and returns the converted array
+     *
+     * @param array $aArray
+     * @return array
      */
     protected function xmlEncode($aArray)
     {
