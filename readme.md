@@ -10,6 +10,6 @@ Afterwards rename **config.sample.php** to **config.php**.
 
 ## exporting reviews
 To use this tool you will need to open the URL you specified in the config.php.  
-By default the exporter should open now,however you may need to specify the controller in the URL like: "yourURL.com/?controller=XmlExport".  
+By default the exporter should open now, however you may need to specify the controller in the URL like: "yourURL.com/?controller=XmlExport".  
 To export reviews click either "export all reviews" to export all reviews in the database,  
 or "export new reviews" to only export reviews which weren't previously exported.
