@@ -1,4 +1,4 @@
-# Google review exporter
+# Google Review Exporter
 
 ## Installation guide
 Open the file config.sample.php.  
