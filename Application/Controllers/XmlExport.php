@@ -24,20 +24,6 @@ class XmlExport extends BaseController
     protected $sTitle = 'XML-Export';
 
     /**
-     * Header for xml file
-     *
-     * @var string
-     */
-    protected $sXmlHeader = '<?xml version="1.0" encoding="UTF-8"?><feed><version>2.3</version><publisher><name>REAVET</name></publisher><reviews>';
-
-    /**
-     * Footer for xml file
-     *
-     * @var string
-     */
-    protected $sXmlFooter = '</reviews></feed>';
-
-    /**
      * Basename for generated xml file
      *
      * @var string
@@ -57,6 +43,7 @@ class XmlExport extends BaseController
         $this->sFileNameBase .= '_ALL';
 
         $this->export();
+        exit;
     }
 
     /**
@@ -72,6 +59,7 @@ class XmlExport extends BaseController
         $this->sFileNameBase .= '_NEW';
 
         $this->export(true);
+        exit;
     }
 
     /**
@@ -89,7 +77,7 @@ class XmlExport extends BaseController
         $tmp = tmpfile();
         $oArticle = new Article();
         $oReview = new Review();
-        fwrite($tmp, $this->sXmlHeader);
+        fwrite($tmp, $this->getXmlHeader());
 
         foreach ($oReview->rowGenerator("nAktiv = '1'") as $aReviewRow) {
             $aReviewArticle = $oArticle->load($aReviewRow['kArtikel'], true);
@@ -99,7 +87,7 @@ class XmlExport extends BaseController
             }
         }
 
-        fwrite($tmp, $this->sXmlFooter);
+        fwrite($tmp, $this->getXmlFooter());
         $this->downloadXml($tmp);
     }
 
@@ -119,9 +107,10 @@ class XmlExport extends BaseController
         $aArticles = [];
 
         if (intval($aReviewArticle['nIstVater']) !== 0) {
-            foreach ($oArticle->rowGenerator("kVaterArtikel = '{$aReviewArticle['kArtikel']}'") as $aArticleRow){
-                if ($blOnlyNew === false || $this->isReviewNew($aArticleRow, $aReviewRow) === true)
-                $aArticles[] = $aArticleRow;
+            foreach ($oArticle->rowGenerator("kVaterArtikel = '".$aReviewArticle['kArtikel']."'") as $aArticleRow) {
+                if ($blOnlyNew === false || $this->isReviewNew($aArticleRow, $aReviewRow) === true) {
+                    $aArticles[] = $aArticleRow;
+                }
             }
         } else {
             if ($blOnlyNew === false || $this->isReviewNew($aReviewArticle, $aReviewRow) === true) {
@@ -162,22 +151,22 @@ class XmlExport extends BaseController
     {
         $aReview = $this->xmlEncode($aReview);
         $formattedTime = date('c', strtotime($aReview['dDatum']));
-        $sXmlString  = "<review>";
-        $sXmlString .= "    <review_id>{$aReview['kBewertung']}</review_id>";
-        $sXmlString .= "    <reviewer>";
-        $sXmlString .= "        <name>{$aReview['cName']}</name>";
-        $sXmlString .= "    </reviewer>";
-        $sXmlString .= "    <review_timestamp>{$formattedTime}</review_timestamp>";
-        $sXmlString .= "    <title>{$aReview['cTitel']}</title>";
-        $sXmlString .= "    <content>{$aReview['cText']}</content>";
-        $sXmlString .= "    <review_url type='group'>{$sReviewUrl}</review_url>";
-        $sXmlString .= "    <ratings>";
-        $sXmlString .= "        <overall min='1' max='5'>{$aReview['nSterne']}</overall>";
-        $sXmlString .= "    </ratings>";
-        $sXmlString .= "    <products>";
+        $sXmlString  = "        <review>".PHP_EOL;
+        $sXmlString .= "            <review_id>".$aReview['kBewertung']."</review_id>".PHP_EOL;
+        $sXmlString .= "            <reviewer>".PHP_EOL;
+        $sXmlString .= "                <name>".$aReview['cName']."</name>".PHP_EOL;
+        $sXmlString .= "            </reviewer>".PHP_EOL;
+        $sXmlString .= "            <review_timestamp>".$formattedTime."</review_timestamp>".PHP_EOL;
+        $sXmlString .= "            <title>".$aReview['cTitel']."</title>".PHP_EOL;
+        $sXmlString .= "            <content>".$aReview['cText']."</content>".PHP_EOL;
+        $sXmlString .= "            <review_url type='group'>".$sReviewUrl."</review_url>".PHP_EOL;
+        $sXmlString .= "            <ratings>".PHP_EOL;
+        $sXmlString .= "                <overall min='1' max='5'>".$aReview['nSterne']."</overall>".PHP_EOL;
+        $sXmlString .= "            </ratings>".PHP_EOL;
+        $sXmlString .= "            <products>".PHP_EOL;
         $sXmlString .= $this->getProductsString($aArticles);
-        $sXmlString .= "    </products>";
-        $sXmlString .= "</review>";
+        $sXmlString .= "            </products>".PHP_EOL;
+        $sXmlString .= "        </review>".PHP_EOL;
 
         fwrite($oFileHandle, $sXmlString);
     }
@@ -193,21 +182,50 @@ class XmlExport extends BaseController
         $sReturn = '';
         foreach ($aArticles as $aArticle) {
             $aArticle = $this->xmlEncode($aArticle);
-            $sProductString  = "        <product>";
-            $sProductString .= "            <product_ids>";
-            $sProductString .= "                <gtins>";
-            $sProductString .= "                    <gtin>{$aArticle['cBarcode']}</gtin>";
-            $sProductString .= "                </gtins>";
-            $sProductString .= "                <skus>";
-            $sProductString .= "                    <sku>{$aArticle['cArtNr']}</sku>";
-            $sProductString .= "                </skus>";
-            $sProductString .= "            </product_ids>";
-            $sProductString .= "            <product_name>{$aArticle['cName']}</product_name>";
-            $sProductString .= "            <product_url>".$this->sShopUrl.$aArticle['cSeo']."</product_url>";
-            $sProductString .= "        </product>";
+            $sProductString  = "                <product>".PHP_EOL;
+            $sProductString .= "                    <product_ids>".PHP_EOL;
+            $sProductString .= "                        <gtins>".PHP_EOL;
+            $sProductString .= "                            <gtin>".$aArticle['cBarcode']."</gtin>".PHP_EOL;
+            $sProductString .= "                        </gtins>".PHP_EOL;
+            $sProductString .= "                        <skus>".PHP_EOL;
+            $sProductString .= "                            <sku>".$aArticle['cArtNr']."</sku>".PHP_EOL;
+            $sProductString .= "                        </skus>".PHP_EOL;
+            $sProductString .= "                    </product_ids>".PHP_EOL;
+            $sProductString .= "                    <product_name>".$aArticle['cName']."</product_name>".PHP_EOL;
+            $sProductString .= "                    <product_url>".$this->sShopUrl.$aArticle['cSeo']."</product_url>".PHP_EOL;
+            $sProductString .= "                </product>".PHP_EOL;
             $sReturn .= $sProductString;
         }
         return $sReturn;
+    }
+
+    /**
+     * Returns the xml header
+     *
+     * @return string
+     */
+    protected function getXmlHeader()
+    {
+        $sHeader  = '<?xml version="1.0" encoding="UTF-8"?>'.PHP_EOL;
+        $sHeader .= '<feed>'.PHP_EOL;
+        $sHeader .= '    <version>2.3</version>'.PHP_EOL;
+        $sHeader .= '    <publisher>'.PHP_EOL;
+        $sHeader .= '        <name>REAVET</name>'.PHP_EOL;
+        $sHeader .= '    </publisher>'.PHP_EOL;
+        $sHeader .= '    <reviews>'.PHP_EOL;
+        return $sHeader;
+    }
+
+    /**
+     * Returns the xml footer
+     *
+     * @return string
+     */
+    protected function getXmlFooter()
+    {
+        $sFooter  = '    </reviews>'.PHP_EOL;
+        $sFooter .= '</feed>'.PHP_EOL;
+        return $sFooter;
     }
 
     /**
@@ -246,7 +264,7 @@ class XmlExport extends BaseController
 
         header('Content-Description: File Transfer');
         header('Content-Type: text/xml');
-        header("Content-Disposition: attachment; filename={$this->sFileNameBase}_".date('YmdHis').".xml");
+        header("Content-Disposition: attachment; filename=".$this->sFileNameBase."_".date('YmdHis').".xml");
         header('Content-Transfer-Encoding: binary');
         header('Expires: 0');
         header('Cache-Control: must-revalidate');

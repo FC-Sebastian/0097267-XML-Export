@@ -55,7 +55,7 @@ class BaseController
      */
     public function getUrl($sSitename = "")
     {
-        return conf::getParam("url") . $sSitename;
+        return Conf::getParam("url") . $sSitename;
     }
 
     /**
