@@ -150,6 +150,7 @@ class XmlExport extends BaseController
     protected function exportToXML($oFileHandle, $aReview, $aArticles, $sReviewUrl)
     {
         $aReview = $this->xmlEncode($aReview);
+
         $formattedTime = date('c', strtotime($aReview['dDatum']));
         $sXmlString  = "        <review>".PHP_EOL;
         $sXmlString .= "            <review_id>".$aReview['kBewertung']."</review_id>".PHP_EOL;
@@ -182,6 +183,9 @@ class XmlExport extends BaseController
         $sReturn = '';
         foreach ($aArticles as $aArticle) {
             $aArticle = $this->xmlEncode($aArticle);
+            if (empty($aArticle['cBarcode'])) {
+                continue;
+            }
             $sProductString  = "                <product>".PHP_EOL;
             $sProductString .= "                    <product_ids>".PHP_EOL;
             $sProductString .= "                        <gtins>".PHP_EOL;
@@ -241,7 +245,7 @@ class XmlExport extends BaseController
         $oFcExport = new FcExport();
 
         foreach ($aArticles as $aArticle) {
-            if ($this->isReviewNew($aArticle,$aReview) === true) {
+            if ($this->isReviewNew($aArticle, $aReview) === true) {
                 $oFcExport->setkArtikel($aArticle['kArtikel']);
                 $oFcExport->setkVaterArtikel($aArticle['kVaterArtikel']);
                 $oFcExport->setkBewertung($aReview['kBewertung']);
@@ -285,9 +289,29 @@ class XmlExport extends BaseController
      */
     protected function xmlEncode($aArray)
     {
-        foreach ($aArray as $key => $value) {
-            $aArray[$key] = htmlentities($value, ENT_XML1);
+        foreach ($aArray as $sKey => $sValue) {
+            $aArray[$sKey] = $this->encodeString($sValue);
         }
         return $aArray;
+    }
+
+    /**
+     * Formats given string to work properly as value of an xml node
+     *
+     * @param  string $sString
+     * @return string
+     */
+    protected function encodeString($sString)
+    {
+        // convert database value to UTF8 since XML is in UTF8 and values seem to be delivered in Latin-1
+        $sString = mb_convert_encoding($sString, "UTF-8", mb_detect_encoding($sString, "UTF-8, ISO-8859-1, ISO-8859-15", true));
+
+        // decode html entities to its original form. Some reviews contain words like "fr&amp;uuml;her" which is converted to "früher"
+        $sString = html_entity_decode($sString);
+
+        // substitute everything else that is not XML conform like > or < characters
+        $sString = htmlentities($sString, ENT_XML1 | ENT_SUBSTITUTE, 'UTF-8');
+
+        return $sString;
     }
 }

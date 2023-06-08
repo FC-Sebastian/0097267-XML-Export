@@ -17,6 +17,13 @@ class BaseModel
     protected $sPrimary = false;
 
     /**
+     * Determines which fields to select
+     *
+     * @var string
+     */
+    protected $sSelectFields = "*";
+
+    /**
      * Used for storing db data
      *
      * @var array
@@ -69,7 +76,7 @@ class BaseModel
      */
     public function load($sId, $blGetArray = false)
     {
-        $sQuery = "SELECT * FROM " . $this->getTableName() . " WHERE {$this->sPrimary}='$sId';";
+        $sQuery = "SELECT ".$this->sSelectFields." FROM " . $this->getTableName() . " WHERE {$this->sPrimary}='$sId';";
         $oResult = DbConnection::executeMySQLQuery($sQuery);
         if (mysqli_num_rows($oResult) == 0) {
             return false;
@@ -170,7 +177,7 @@ class BaseModel
      */
     public function rowGenerator($sWhere = false)
     {
-        $sQuery = "SELECT * FROM {$this->getTableName()}";
+        $sQuery = "SELECT ".$this->sSelectFields." FROM {$this->getTableName()}";
         if ($sWhere !== false) {
             $sQuery .= " WHERE {$sWhere}";
         }

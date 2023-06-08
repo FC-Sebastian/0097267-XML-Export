@@ -15,4 +15,11 @@ class Article extends BaseModel
      * @var string
      */
     protected $sPrimary = 'kArtikel';
+
+    /**
+     * Determines which fields to select
+     *
+     * @var string
+     */
+    protected $sSelectFields = "kArtikel, kVaterArtikel, cSeo, cArtNr, cName, cBarcode, nIstVater";
 }

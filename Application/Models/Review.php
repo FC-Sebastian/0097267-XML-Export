@@ -15,4 +15,11 @@ class Review extends BaseModel
      * @var string
      */
     protected $sPrimary = 'kBewertung';
+
+    /**
+     * Determines which fields to select
+     *
+     * @var string
+     */
+    protected $sSelectFields = "kBewertung, kArtikel, cName, cTitel, cText, nSterne, dDatum";
 }
